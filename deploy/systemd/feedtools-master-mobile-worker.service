@@ -1,0 +1,22 @@
+[Unit]
+Description=FeedTools Master Mobile slow worker
+After=network.target mariadb.service mysql.service feedtools-worker.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/feedtools
+EnvironmentFile=-/var/www/feedtools/.env
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+CPUWeight=30
+ExecStart=/usr/bin/php /var/www/feedtools/bin/worker.php --loop --only-op-type=master_mobile_feed --max_parallel=1
+KillMode=process
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

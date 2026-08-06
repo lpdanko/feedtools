@@ -1,0 +1,32 @@
+server {
+    listen 80;
+    server_name feedtools.example.com;
+
+    root /var/www/feedtools/public;
+    index index.php;
+
+    client_max_body_size 1024m;
+
+    access_log /var/log/nginx/feedtools.access.log;
+    error_log /var/log/nginx/feedtools.error.log warn;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ ^/(app|bin|deploy|storage|vendor)/ {
+        deny all;
+    }
+
+    location ~ /\.(?!well-known) {
+        deny all;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_read_timeout 600s;
+        fastcgi_send_timeout 600s;
+    }
+}

@@ -1,0 +1,48 @@
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local configuration and credentials
+/.env
+/.env.*
+!/.env.example
+/app/config.local.php
+
+# Dependencies and local caches
+/vendor/
+**/node_modules
+/.cache/
+**/__pycache__/
+*.py[cod]
+*.log
+
+# Private deployment access, environment files, and migration artifacts
+/deploy/local/
+
+# Runtime data. Keep only directory placeholders and access rules.
+/storage/*
+!/storage/.htaccess
+!/storage/cache/
+!/storage/cache/.gitignore
+!/storage/logs/
+!/storage/logs/.gitignore
+!/storage/outputs/
+!/storage/outputs/.gitignore
+!/storage/uploads/
+!/storage/uploads/.gitignore
+
+# Generated analyses, exports, archives, and business data
+/analysis/output/
+/outputs/
+/Архив.zip
+*.sqlite
+*.sqlite3
+*.db
+
+# Test and coverage artifacts
+/.phpunit.cache/
+/coverage/

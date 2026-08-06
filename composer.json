@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "preflight": "php bin/preflight.php",
+    "lint": "find app public bin -name '*.php' -print0 | xargs -0 -n1 php -l",
+    "db-doctor": "php bin/db-doctor.php",
+    "init-runtime": "php bin/init-runtime.php",
+    "wb-smoke": "php bin/wb-smoke.php",
+    "wb-taxonomy-import": "php bin/import_taxonomy_wb.php"
+  },
+  "require": {
+    "phpoffice/phpspreadsheet": "^3.6"
+  }
+}

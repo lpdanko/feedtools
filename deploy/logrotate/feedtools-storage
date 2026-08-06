@@ -1,0 +1,11 @@
+/var/www/feedtools/storage/logs/*.log {
+    daily
+    maxsize 20M
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    su www-data www-data
+}

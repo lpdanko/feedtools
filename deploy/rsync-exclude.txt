@@ -1,0 +1,16 @@
+deploy/local/
+.git/
+.env
+.env.local
+app/config.local.php
+storage/cache/
+storage/logs/
+storage/master_mobile/
+storage/outputs/
+storage/reports/
+storage/uploads/
+vendor/
+__pycache__/
+*.log
+.DS_Store
+Архив.zip
