@@ -107,6 +107,7 @@ return [
     'auto_spawn' => false,
     'max_parallel' => 3,
     'price_tool_max_parallel' => 3,
+    'stocks_tool_automation_max_parallel' => 1,
     'wb_promotions_max_parallel' => 1,
     'marketplace_data_max_parallel' => 1,
     'supplier_feed_max_parallel' => 1,

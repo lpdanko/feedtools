@@ -5952,8 +5952,32 @@ function stocks_tool_automation_run_due(callable $log, ?int $profileId = null, ?
     $rows = $st->fetchAll() ?: [];
 
     $nowMsk = new DateTimeImmutable('now', new DateTimeZone('Europe/Moscow'));
+    $maxParallel = max(1, min(10, (int)($cfg['worker']['stocks_tool_automation_max_parallel'] ?? 1)));
+    $automationProfileIds = array_values(array_unique(array_filter(array_map(
+        static fn(array $row): int => (int)($row['profile_id'] ?? 0),
+        array_filter($rows, 'is_array')
+    ))));
+    $activeRunsByProfile = stocks_tool_run_active_map($automationProfileIds, $cfg);
+    $activeRunIds = [];
+    foreach ($activeRunsByProfile as $activeRun) {
+        $activeRunId = (int)($activeRun['id'] ?? 0);
+        if ($activeRunId > 0 && stocks_tool_run_is_stale_active($activeRun)) {
+            stocks_tool_run_mark_stale(
+                $activeRunId,
+                'Активный запуск автоматизации завис и был закрыт перед проверкой общей очереди.',
+                $cfg
+            );
+            continue;
+        }
+        if ($activeRunId > 0) {
+            $activeRunIds[$activeRunId] = true;
+        }
+    }
+    $activeCount = count($activeRunIds);
     $summary = [
         'now_msk' => $nowMsk->format('Y-m-d H:i:s'),
+        'max_parallel' => $maxParallel,
+        'active_at_start' => $activeCount,
         'checked' => 0,
         'queued' => 0,
         'skipped' => 0,
@@ -6048,6 +6072,15 @@ function stocks_tool_automation_run_due(callable $log, ?int $profileId = null, ?
             continue;
         }
 
+        if ($activeCount >= $maxParallel) {
+            $item['status'] = 'capacity';
+            $item['message'] = 'Достигнут лимит одновременных автоматических запусков (' . $maxParallel . ').';
+            $summary['skipped']++;
+            $summary['items'][] = $item;
+            $log('[automation #' . (int)($automation['id'] ?? 0) . '] waiting for global capacity (' . $activeCount . '/' . $maxParallel . ")\n");
+            continue;
+        }
+
         try {
             $startSummary = stocks_tool_run_start((int)$profile['id'], 'automation_stock_sync', 'automation', $cfg);
             $runId = (int)($startSummary['run_id'] ?? 0);
@@ -6059,6 +6092,7 @@ function stocks_tool_automation_run_due(callable $log, ?int $profileId = null, ?
             $item['run_id'] = $runId > 0 ? $runId : null;
             if ($item['status'] === 'queued') {
                 $summary['queued']++;
+                $activeCount++;
             } else {
                 $summary['skipped']++;
             }

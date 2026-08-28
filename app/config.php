@@ -404,6 +404,7 @@ $cfg = [
     'auto_spawn' => ft_env_bool('WORKER_AUTO_SPAWN', false),
     'max_parallel' => ft_env_int('WORKER_MAX_PARALLEL', 3),
     'price_tool_max_parallel' => ft_env_int('WORKER_PRICE_TOOL_MAX_PARALLEL', 3),
+    'stocks_tool_automation_max_parallel' => ft_env_int('STOCKS_TOOL_AUTOMATION_MAX_PARALLEL', 1),
     'wb_promotions_max_parallel' => ft_env_int('WORKER_WB_PROMOTIONS_MAX_PARALLEL', 1),
     'marketplace_data_max_parallel' => ft_env_int('WORKER_MARKETPLACE_DATA_MAX_PARALLEL', 1),
     'supplier_feed_max_parallel' => ft_env_int('WORKER_SUPPLIER_FEED_MAX_PARALLEL', 1),
