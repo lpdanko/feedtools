@@ -37,6 +37,11 @@ function h($s)
   return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+function supplier_view_ui_text(string $ru, string $en): string
+{
+  return function_exists('ft_i18n_locale') && ft_i18n_locale() === 'en' ? $en : $ru;
+}
+
 function supplier_view_product_id(array $offer): int
 {
   return (int)($offer['_supplier_product_id'] ?? 0);
@@ -44,22 +49,42 @@ function supplier_view_product_id(array $offer): int
 
 function supplier_view_standard_field_labels(): array
 {
+  $labels = [];
   if (function_exists('supplier_products_standard_field_labels')) {
-    return supplier_products_standard_field_labels();
+    $labels = supplier_products_standard_field_labels();
+  } else {
+    $labels = [
+      'purchase_price' => 'Закупочная цена',
+      'brand' => 'Бренд',
+      'brand_ozon' => 'Бренд Ozon',
+      'brand_wb' => 'Бренд WB',
+      'short_name' => 'Короткое название',
+      'tnved_code' => 'Код ТН ВЭД',
+      'weight' => 'Вес',
+      'length' => 'Длина',
+      'width' => 'Ширина',
+      'height' => 'Высота',
+      'stock' => 'Остаток',
+    ];
   }
-  return [
-    'purchase_price' => 'Закупочная цена',
-    'brand' => 'Бренд',
-    'brand_ozon' => 'Бренд Ozon',
-    'brand_wb' => 'Бренд WB',
-    'short_name' => 'Короткое название',
-    'tnved_code' => 'Код ТН ВЭД',
-    'weight' => 'Вес',
-    'length' => 'Длина',
-    'width' => 'Ширина',
-    'height' => 'Высота',
-    'stock' => 'Остаток',
-  ];
+
+  if (function_exists('ft_i18n_locale') && ft_i18n_locale() === 'en') {
+    $labels = array_replace($labels, [
+      'purchase_price' => 'Purchase price',
+      'brand' => 'Brand',
+      'brand_ozon' => 'Ozon brand',
+      'brand_wb' => 'WB brand',
+      'short_name' => 'Short name',
+      'tnved_code' => 'HS code',
+      'weight' => 'Weight',
+      'length' => 'Length',
+      'width' => 'Width',
+      'height' => 'Height',
+      'stock' => 'Stock',
+    ]);
+  }
+
+  return $labels;
 }
 
 function supplier_view_field_label(string $kind, string $name): string
@@ -2582,13 +2607,15 @@ function supplier_view_same_model_editable(array $offer): string
   $productId = supplier_view_product_id($offer);
   $value = trim((string)($offer['same_model'] ?? ''));
   $fieldId = (int)($offer['same_model_field_id'] ?? 0);
+  $modelLabel = supplier_view_ui_text('модель:', 'Model:');
+  $deleteLabel = supplier_view_ui_text('Удалить модель', 'Delete model');
   if ($productId <= 0) {
-    return $value !== '' ? '<div class="supplier-same-model"><span class="supplier-same-model-label">модель:</span> ' . h($value) . '</div>' : '';
+    return $value !== '' ? '<div class="supplier-same-model"><span class="supplier-same-model-label">' . h($modelLabel) . '</span> ' . h($value) . '</div>' : '';
   }
 
   return '<div class="supplier-same-model" data-product-id="' . h($productId) . '" data-field-id="' . h($fieldId) . '">'
-    . '<button type="button" class="supplier-same-model-delete" title="Удалить модель" aria-label="Удалить модель">×</button>'
-    . '<span class="supplier-same-model-label">модель:</span> '
+    . '<button type="button" class="supplier-same-model-delete" title="' . h($deleteLabel) . '" aria-label="' . h($deleteLabel) . '">×</button>'
+    . '<span class="supplier-same-model-label">' . h($modelLabel) . '</span> '
     . '<span class="supplier-same-model-value" contenteditable="true" spellcheck="false">' . h($value) . '</span>'
     . '<span class="supplier-edit-state" aria-live="polite"></span>'
     . '</div>';
@@ -4438,12 +4465,12 @@ function supplier_view_dimensions_cell(array $offer): string
 
   $lines = [];
   if ($length !== '' || $width !== '' || $height !== '') {
-    $lines[] = 'Д: ' . ($length !== '' ? $length : '—');
-    $lines[] = 'Ш: ' . ($width !== '' ? $width : '—');
-    $lines[] = 'В: ' . ($height !== '' ? $height : '—');
+    $lines[] = supplier_view_ui_text('Д', 'Length') . ': ' . ($length !== '' ? $length : '—');
+    $lines[] = supplier_view_ui_text('Ш', 'Width') . ': ' . ($width !== '' ? $width : '—');
+    $lines[] = supplier_view_ui_text('В', 'Height') . ': ' . ($height !== '' ? $height : '—');
   }
   if ($weight !== '') {
-    $lines[] = 'Вес: ' . $weight;
+    $lines[] = supplier_view_ui_text('Вес', 'Weight') . ': ' . $weight;
   }
   if (!$lines) {
     return '<span class="muted">—</span>';
