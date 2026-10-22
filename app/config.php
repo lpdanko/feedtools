@@ -161,6 +161,7 @@ $cfg = [
     'llm_request_days' => ft_env_int('APP_RETENTION_LLM_REQUEST_DAYS', 1),
     'price_push_days' => ft_env_int('APP_RETENTION_PRICE_PUSH_DAYS', 1),
     'operation_log_days' => ft_env_int('APP_RETENTION_OPERATION_LOG_DAYS', 7),
+    'sync_run_log_days' => ft_env_int('APP_RETENTION_SYNC_RUN_LOG_DAYS', 30),
     'operation_output_days' => ft_env_int('APP_RETENTION_OPERATION_OUTPUT_DAYS', 1),
     'remote_uploaded_local_days' => ft_env_int('APP_RETENTION_REMOTE_UPLOADED_LOCAL_DAYS', 1),
     'wb_promotion_price_history_days' => ft_env_int('APP_RETENTION_WB_PROMOTION_PRICE_HISTORY_DAYS', 7),

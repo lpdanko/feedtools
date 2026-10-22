@@ -248,9 +248,36 @@ function ft_cleanup_operation_logs(int $days, int $limit = 1000): int
     return $stmt->rowCount();
 }
 
+function ft_cleanup_sync_run_logs(string $kind, int $days, int $limit = 1000): int
+{
+    $targets = [
+        'orders' => ['table' => 'feedtools_marketplace_order_sync_runs', 'date' => 'started_at'],
+        'stocks' => ['table' => 'feedtools_marketplace_stock_runs', 'date' => 'created_at'],
+    ];
+    if (!isset($targets[$kind]) || !function_exists('db')) {
+        return 0;
+    }
+
+    $days = max(1, $days);
+    $limit = max(1, min(10000, $limit));
+    $table = $targets[$kind]['table'];
+    $dateColumn = $targets[$kind]['date'];
+    $stmt = db()->prepare("
+        UPDATE {$table}
+        SET log_text = NULL
+        WHERE {$dateColumn} < DATE_SUB(NOW(), INTERVAL {$days} DAY)
+          AND COALESCE(log_text, '') <> ''
+        ORDER BY id ASC
+        LIMIT {$limit}
+    ");
+    $stmt->execute();
+    return $stmt->rowCount();
+}
+
 $llmDays = (int)($cfg['retention']['llm_request_days'] ?? 1);
 $priceDays = (int)($cfg['retention']['price_push_days'] ?? 1);
 $operationLogDays = (int)($cfg['retention']['operation_log_days'] ?? 7);
+$syncRunLogDays = (int)($cfg['retention']['sync_run_log_days'] ?? 30);
 $outputDays = (int)($cfg['retention']['operation_output_days'] ?? 7);
 $remoteUploadedLocalDays = (int)($cfg['retention']['remote_uploaded_local_days'] ?? 1);
 $wbPromotionPriceHistoryDays = (int)($cfg['retention']['wb_promotion_price_history_days'] ?? 14);
@@ -259,6 +286,7 @@ $orderDays = (int)($cfg['retention']['order_snapshot_history_days'] ?? 7);
 echo 'retention: llm_days=' . max(1, $llmDays)
     . ' price_push_days=' . max(1, $priceDays)
     . ' operation_log_days=' . max(1, $operationLogDays)
+    . ' sync_run_log_days=' . max(1, $syncRunLogDays)
     . ' operation_output_days=' . max(1, $outputDays)
     . ' remote_uploaded_local_days=' . max(1, $remoteUploadedLocalDays)
     . ' wb_promotion_price_history_days=' . max(1, $wbPromotionPriceHistoryDays)
@@ -278,6 +306,16 @@ ft_cleanup_retention_loop(
 ft_cleanup_retention_loop(
     'operation_logs_cleared',
     static fn(): int => ft_cleanup_operation_logs(max(1, $operationLogDays), 1000)
+);
+
+ft_cleanup_retention_loop(
+    'order_sync_logs_cleared',
+    static fn(): int => ft_cleanup_sync_run_logs('orders', max(1, $syncRunLogDays), 1000)
+);
+
+ft_cleanup_retention_loop(
+    'stock_sync_logs_cleared',
+    static fn(): int => ft_cleanup_sync_run_logs('stocks', max(1, $syncRunLogDays), 1000)
 );
 
 ft_cleanup_retention_loop(
